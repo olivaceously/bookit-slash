@@ -87,15 +87,21 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 
 var officeLocations = ["boston","waltham"];
 var meetingDurations = ["15","30","45","60","75","90"];
+var meetingRooms = ["Asteroids","Centipede","Contra","Donkey Kong","Frogger","Galaga","Myst","Pac-Man","Pong","Q*Bert","Tetris","Tron","Zelda","Bilbo","Boston Common","Bunker Hill","Charles","Constitution","East","Faneuil","Fenway","Frodo","Gandalf","Hynes","Legolas","Newbury","North","Prudential","Sauron","Seagol","South","The Garden","West","Babbage","Glacier","Gosling","Hopper","Minsky","Redwood","Rossum","Shenandoah","Turing","Yellowstone","Yosemite"];
 
-// var XMLHttpRequest = require("xmlhttprequest");
-// var request = new XMLHttpRequest();
-// request.open("GET","../db_slackbutton_slash_command/officeLocations/meetingRooms.json",false);
-// request.send(null);
-//var JSONrooms = JSON.parse(request.responseText);
 
 var availableBoston = ["Hopper","Redwood","Rossum","Shenandoah","Turing"];
 var availableWaltham = ["Bilbo","Boston Common","Charles","South","The Garden","West"];
+
+var unavailableBoston = ["Babbage","Glacier","Gosling", "Yellowstone"];
+var unavailableWaltham = ["Frogger","Galaga","Myst","Pac-Man","Newbury","North"];
+
+
+meetingRooms = meetingRooms.map(v => v.toLowerCase());
+availableBoston = availableBoston.map(v => v.toLowerCase());
+availableWaltham = availableWaltham.map(v => v.toLowerCase());
+unavailableBoston = unavailableBoston.map(v => v.toLowerCase());
+unavailableWaltham = unavailableWaltham.map(v => v.toLowerCase());
 
 controller.on('slash_command', function (slashCommand, message) {
 
@@ -103,6 +109,7 @@ controller.on('slash_command', function (slashCommand, message) {
     if (message.token !== process.env.VERIFICATION_TOKEN) return; 
 
     var textList = message.text.split(' ').map(v => v.toLowerCase());
+
 
     var method = textList[0];
 
@@ -124,22 +131,14 @@ controller.on('slash_command', function (slashCommand, message) {
                 case "find":
                     var location = textList[1];
                     var duration = textList[2];
+                    var startTime = textList[3];
 
-                    // Check input format
-                    if (officeLocations.indexOf(location) < 0) {
-                        slashCommand.replyPrivate(message, "I'm sorry, I do not recognize that office location. Please enter either 'Boston' or 'Waltham'.");
+                    if (!isValidLocation(location) && !isValidDuration(duration))
                         break;
-                    } 
-                    if (meetingDurations.indexOf(duration) < 0) {
-                        slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15 and up to 90 mins.");
-                        break;
-                    }
-                    
                     
                     // return the list of available rooms 
 
                     // TODO: make office location upper case
-                    // if defaults are not set
                     if (location === "boston") {
                         slashCommand.replyPrivate(message, 
                             "The conference rooms currently available for " + duration + " mins in " + officeLocations[0] + " are: "
@@ -150,6 +149,8 @@ controller.on('slash_command', function (slashCommand, message) {
                              + availableWaltham.join(", ") + ".");
                     }
 
+                    // if defaults are not set
+
                     // if defaults are set
 
                     // tell user they can set defaults if not set
@@ -157,7 +158,23 @@ controller.on('slash_command', function (slashCommand, message) {
                     //slashCommand.replyPrivate(message, method);
 
                 case "book":
-                    slashCommand.replyPrivate(message, "this function has not been implemented yet.");
+                    var room = textList[1];
+                    var duration = textList[2];
+                    var startTime = textList[3];
+
+                    // Check input format
+                    if (!isValidRoom(room) || !isValidDuration(duration))
+                        break;
+
+                    if (availableBoston.indexOf(room) >= 0 || availableWaltham.indexOf(room) >= 0) {
+                        slashCommand.replyPrivate(message, 
+                            "Okay, " + room + " is now booked for " + duration + " mins.");
+                    } else {
+                        slashCommand.replyPrivate(message, 
+                            "Sorry, but " + room + " is currently unavailable.");
+                    }
+
+                    //slashCommand.replyPrivate(message, "yo we did it!");
 
                 default:
                     slashCommand.replyPrivate(message,
@@ -191,8 +208,32 @@ controller.on('slash_command', function (slashCommand, message) {
 
     }
 
-})
-;
+    function isValidLocation(location) {
+        if (officeLocations.indexOf(location) < 0) {
+            slashCommand.replyPrivate(message, "I'm sorry, I do not recognize that office location. Please enter either 'Boston' or 'Waltham'.");
+            return false;
+        } 
+        return true;
+    }
+
+
+    function isValidDuration(duration) {
+        if (meetingDurations.indexOf(duration) < 0) {
+            slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15 and up to 90 mins.");
+            return false;
+        }
+        return true;
+    }
+
+    function isValidRoom(room) {
+        if (meetingRooms.indexOf(room) < 0) {
+            slashCommand.replyPrivate(message, "I'm sorry, I do not recognize that conference room. Type /bookit help if you need more information.");
+            return false;
+        }
+        return true;
+    }
+
+});
 
 
 
