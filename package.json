@@ -1,5 +1,5 @@
 {
-  "name": "bookit",
+  "name": "bookit-slash",
   "version": "1.0.0",
   "description": "bookit a slash command to book rooms via slack",
   "main": "index.js",

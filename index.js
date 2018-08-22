@@ -85,36 +85,93 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 // BEGIN EDITING HERE!
 //
 
+var officeLocations = ["boston","waltham"];
+var meetingDurations = ["15","30","45","60","75","90"];
+
 controller.on('slash_command', function (slashCommand, message) {
 
+    // ensure token matches
+    if (message.token !== process.env.VERIFICATION_TOKEN) return; 
+
+    var textList = message.text.split(' ');
+    var method = textList[0];
+
     switch (message.command) {
-        case "/echo_me": //handle the `/echo` slash command. We might have others assigned to this app too!
-            // The rules are simple: If there is no text following the command, treat it as though they had requested "help"
-            // Otherwise just echo back to them what they sent us.
+        case "/bookit": //handle the `/bookit` slash command. 
+          
+            switch (method) {
+                case ("help" || ""):
+                    slashCommand.replyPrivate(message,
+                        "I am here to help you book a room. " + 
+                        "Try typing `/bookit find` to see all available rooms in your default office.");  
 
-            // but first, let's make sure the token matches!
-            if (message.token !== process.env.VERIFICATION_TOKEN) return; //just ignore it.
+                // case "defaults":
+                    // parse text list for location and duration
 
-            // if no text was supplied, treat it as a help command
-            if (message.text === "" || message.text === "help") {
-                slashCommand.replyPrivate(message,
-                    "I echo back what you tell me. " +
-                    "Try typing `/echo hello` to see.");
-                return;
+                    // persist user defaults
+
+                case "find":
+                    var location = textList[1];
+                    var duration = textList[2];
+
+                    if (officeLocations.indexOf(location) < 0) {
+                        slashCommand.replyPrivate(message, "I'm sorry, I do not recognize that office location. Please enter either 'Boston' or 'Waltham'.");
+                    } 
+
+                    if (meetingDurations.indexOf(duration) < 0) {
+                        slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15.");
+                    }
+
+                    // if defaults are set
+
+                    // if defaults are not set
+
+                    // return the list of available rooms 
+
+                    // tell user they can set defaults if not set
+
+                    slashCommand.replyPrivate(message, method);
+
+                case "book":
+                    slashCommand.replyPrivate(message, "this function has not been implemented yet.");
+
+                default:
+                    slashCommand.replyPrivate(message,
+                        "I am here to help you book a room. " + 
+                        "Try typing `/bookit find` to see all available rooms in your default office.");
+
             }
+           
+            // // if no text was supplied, treat it as a help command
+            // if (message.text === "" || message.text === "help") {
+            //     slashCommand.replyPrivate(message,
+            //         "I am here to help you book a room. " + 
+            //         "Try typing `/bookit find` to see all available rooms in your default office.");
+            //     // slashCommand.replyPrivate(message, String(slashCommand));
+            //     return;
+            // }
 
-            // If we made it here, just echo what the user typed back at them
-            //TODO You do it!
-            slashCommand.replyPublic(message, "1", function() {
-                slashCommand.replyPublicDelayed(message, "2").then(slashCommand.replyPublicDelayed(message, "3"));
-            });
+            // if (method === "find" ) {
+            //     slashCommand.replyPrivate(message, method);
 
-            break;
+            // }
+
+            // // If we made it here, 
+            // slashCommand.replyPublic(message, "booked!", function() {
+            //     slashCommand.replyPublicDelayed(message, "2").then(slashCommand.replyPublicDelayed(message, "3"));
+            // });
+
+        break;
         default:
-            slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " yet.");
+            slashCommand.replyPublic(message, "error. contact administrators.");
 
     }
 
 })
 ;
+
+
+
+
+
 
