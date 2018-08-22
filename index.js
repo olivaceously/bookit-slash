@@ -120,8 +120,9 @@ controller.on('slash_command', function (slashCommand, message) {
                 case ("help" || ""):
                     //slashCommand.replyPrivate(message, String(JSONrooms.meetingRooms.boston.available[0]));
                     slashCommand.replyPrivate(message,
-                        "I am here to help you book a room. " + 
-                        "Try typing `/bookit find` to see all available rooms in your default office.");  
+                        "I am here to help you book a room. Try one of the following: \n\n" + 
+                        "`/bookit find [location] [duration]`:\t\t see all available rooms in your specified office. \n" +
+                        "`/bookit book [room] [duration]`:\t\t\t\t book a room for a specified period of minutes (15, 30, 45, etc.).");  
 
                 // case "defaults":
                     // parse text list for location and duration
@@ -141,12 +142,12 @@ controller.on('slash_command', function (slashCommand, message) {
                     // TODO: make office location upper case
                     if (location === "boston") {
                         slashCommand.replyPrivate(message, 
-                            "The conference rooms currently available for " + duration + " mins in " + officeLocations[0] + " are: "
-                             + availableBoston.join(", ") + ".");
+                            "The conference rooms currently available for " + duration + " mins in " + toTitleCase(officeLocations[0]) + " are: "
+                             + toTitleCase(availableBoston.join(", ")) + ".");
                     } else if (location === "waltham") {
                              slashCommand.replyPrivate(message, 
-                            "The conference rooms currently available for " + duration + " mins in " + officeLocations[1] + " are: "
-                             + availableWaltham.join(", ") + ".");
+                            "The conference rooms currently available for " + duration + " mins in " + toTitleCase(officeLocations[1]) + " are: "
+                             + toTitleCase(availableWaltham.join(", ")) + ".");
                     }
 
                     // if defaults are not set
@@ -192,7 +193,7 @@ controller.on('slash_command', function (slashCommand, message) {
                 default:
                     slashCommand.replyPrivate(message,
                         "I am here to help you book a room. " + 
-                        "Try typing `/bookit find` to see all available rooms in your default office.");
+                        "Try typing `/bookit help` to see all available options.");
 
             }
            
@@ -220,6 +221,15 @@ controller.on('slash_command', function (slashCommand, message) {
             slashCommand.replyPublic(message, "error. contact administrators.");
 
     }
+
+    function toTitleCase(str) {
+        return str.replace(
+            /\w\S*/g,
+            function(txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            }
+        );
+     }
 
     function isValidLocation(location) {
         if (officeLocations.indexOf(location) < 0) {
