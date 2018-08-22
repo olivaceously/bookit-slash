@@ -1,0 +1,8 @@
+{
+	"meetingRooms" : {
+
+		"available" : ["Asteroids","Centipede","Contra","Donkey Kong","Frogger","Galaga","Myst","Pac-Man","Pong","Q*Bert","Tetris","Tron","Zelda","Bilbo","Boston Common","Bunker Hill","Charles","Constitution","East","Faneuil","Fenway","Frodo","Gandalf","Hynes","Legolas","Newbury","North","Prudential","Sauron","Seagol","South","The Garden","West"],
+		"unavailable" : []
+	}
+}   
+

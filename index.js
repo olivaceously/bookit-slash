@@ -88,15 +88,22 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 var officeLocations = ["boston","waltham"];
 var meetingDurations = ["15","30","45","60","75","90"];
 
+// var XMLHttpRequest = require("xmlhttprequest");
+// var request = new XMLHttpRequest();
+// request.open("GET","../db_slackbutton_slash_command/officeLocations/meetingRooms.json",false);
+// request.send(null);
+//var JSONrooms = JSON.parse(request.responseText);
+
+var availableBoston = ["Hopper","Redwood","Rossum","Shenandoah","Turing"];
+var availableWaltham = ["Bilbo","Boston Common","Charles","South","The Garden","West"];
+
 controller.on('slash_command', function (slashCommand, message) {
 
     // ensure token matches
     if (message.token !== process.env.VERIFICATION_TOKEN) return; 
 
-    var textList = message.text.split(' ');
-    for (var userText in textList) {
-        userText = userText.toLowerCase();
-    }
+    var textList = message.text.split(' ').map(v => v.toLowerCase());
+
     var method = textList[0];
 
     switch (message.command) {
@@ -104,6 +111,7 @@ controller.on('slash_command', function (slashCommand, message) {
           
             switch (method) {
                 case ("help" || ""):
+                    //slashCommand.replyPrivate(message, String(JSONrooms.meetingRooms.boston.available[0]));
                     slashCommand.replyPrivate(message,
                         "I am here to help you book a room. " + 
                         "Try typing `/bookit find` to see all available rooms in your default office.");  
@@ -117,26 +125,36 @@ controller.on('slash_command', function (slashCommand, message) {
                     var location = textList[1];
                     var duration = textList[2];
 
-
                     // Check input format
                     if (officeLocations.indexOf(location) < 0) {
                         slashCommand.replyPrivate(message, "I'm sorry, I do not recognize that office location. Please enter either 'Boston' or 'Waltham'.");
+                        break;
                     } 
                     if (meetingDurations.indexOf(duration) < 0) {
-                        slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15.");
+                        slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15 and up to 90 mins.");
+                        break;
                     }
                     
-                    // return the list of available rooms 
                     
+                    // return the list of available rooms 
 
+                    // TODO: make office location upper case
                     // if defaults are not set
+                    if (location === "boston") {
+                        slashCommand.replyPrivate(message, 
+                            "The conference rooms currently available for " + duration + " mins in " + officeLocations[0] + " are: "
+                             + availableBoston.join(", ") + ".");
+                    } else if (location === "waltham") {
+                             slashCommand.replyPrivate(message, 
+                            "The conference rooms currently available for " + duration + " mins in " + officeLocations[1] + " are: "
+                             + availableWaltham.join(", ") + ".");
+                    }
 
                     // if defaults are set
 
-
                     // tell user they can set defaults if not set
 
-                    slashCommand.replyPrivate(message, method);
+                    //slashCommand.replyPrivate(message, method);
 
                 case "book":
                     slashCommand.replyPrivate(message, "this function has not been implemented yet.");
