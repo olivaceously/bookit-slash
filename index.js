@@ -166,9 +166,22 @@ controller.on('slash_command', function (slashCommand, message) {
                     if (!isValidRoom(room) || !isValidDuration(duration))
                         break;
 
-                    if (availableBoston.indexOf(room) >= 0 || availableWaltham.indexOf(room) >= 0) {
+                    if (availableBoston.indexOf(room) >= 0) {
                         slashCommand.replyPrivate(message, 
                             "Okay, " + room + " is now booked for " + duration + " mins.");
+                            // removes available room from available array
+                            var indexRoom = availableBoston.indexOf(room);
+                            availableBoston.splice(indexRoom, 1);
+                            unavailableBoston.push(room);
+
+                    }if (availableWaltham.indexOf(room) >= 0) {
+                        slashCommand.replyPrivate(message, 
+                            "Okay, " + room + " is now booked for " + duration + " mins.");
+                            // removes available room from available array
+                            var indexRoom = availableWaltham.indexOf(room);
+                            availableWaltham.splice(indexRoom, 1);
+                            unavailableWaltham.push(room);
+
                     } else {
                         slashCommand.replyPrivate(message, 
                             "Sorry, but " + room + " is currently unavailable.");
