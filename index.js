@@ -94,6 +94,9 @@ controller.on('slash_command', function (slashCommand, message) {
     if (message.token !== process.env.VERIFICATION_TOKEN) return; 
 
     var textList = message.text.split(' ');
+    for (var userText in textList) {
+        userText = userText.toLowerCase();
+    }
     var method = textList[0];
 
     switch (message.command) {
@@ -114,19 +117,22 @@ controller.on('slash_command', function (slashCommand, message) {
                     var location = textList[1];
                     var duration = textList[2];
 
+
+                    // Check input format
                     if (officeLocations.indexOf(location) < 0) {
                         slashCommand.replyPrivate(message, "I'm sorry, I do not recognize that office location. Please enter either 'Boston' or 'Waltham'.");
                     } 
-
                     if (meetingDurations.indexOf(duration) < 0) {
                         slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15.");
                     }
-
-                    // if defaults are set
+                    
+                    // return the list of available rooms 
+                    
 
                     // if defaults are not set
 
-                    // return the list of available rooms 
+                    // if defaults are set
+
 
                     // tell user they can set defaults if not set
 
