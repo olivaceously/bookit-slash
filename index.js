@@ -1,20 +1,9 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- ______    ______    ______   __  __    __    ______
- /\  == \  /\  __ \  /\__  _\ /\ \/ /   /\ \  /\__  _\
- \ \  __<  \ \ \/\ \ \/_/\ \/ \ \  _"-. \ \ \ \/_/\ \/
- \ \_____\ \ \_____\   \ \_\  \ \_\ \_\ \ \_\   \ \_\
- \/_____/  \/_____/    \/_/   \/_/\/_/  \/_/    \/_/
-
-
- This is a sample Slack Button application that provides a custom
- Slash command.
-
- This bot demonstrates many of the core features of Botkit:
-
- *
- * Authenticate users with Slack using OAuth
- * Receive messages using the slash_command event
- * Reply to Slash command both publicly and privately-
+  ______    ______    ______    __  __    __    ______    
+ /\  == \  /\  __ \  /\  __ \  /\ \/ /   /\ \  /\__  _\
+ \ \  __<  \ \ \/\ \ \ \ \/\ \ \ \  _"-. \ \ \ \/_/\ \/
+  \ \_____\ \ \_____\ \ \_____\ \ \_\ \_\ \ \_\   \ \_\
+   \/_____/  \/_____/  \/_____/  \/_/\/_/  \/_/    \/_/
 
  # RUN THE BOT:
 
@@ -28,15 +17,6 @@
 
  Note: you can test your oauth authentication locally, but to use Slash commands
  in Slack, the app must be hosted at a publicly reachable IP or host.
-
-
- # EXTEND THE BOT:
-
- Botkit is has many features for building cool and useful bots!
-
- Read all about it here:
-
- -> http://howdy.ai/botkit
 
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -123,13 +103,22 @@ controller.on('slash_command', function (slashCommand, message) {
                     //slashCommand.replyPrivate(message, String(JSONrooms.meetingRooms.boston.available[0]));
                     slashCommand.replyPrivate(message,
                         "I am here to help you book a room. Try one of the following: \n\n" + 
-                        "`/bookit find [location] [duration]`:\t\t see all available rooms in your specified office. \n" +
-                        "`/bookit book [room] [duration]`:\t\t\t\t book a room for a specified period of minutes (15, 30, 45, etc.).");  
-
+                        "`/bookit find [location] [start time] [end time]`:\t\t\t\t\t\t see all available rooms in your specified office.\n" +
+                        "`/bookit book [room] [start time] [end time]`:\t\t\t\t\t\t\t\tbook a room for a specified period of minutes (15, 30, 45, etc.).\n" +
+                        "`/bookit cancel [room] [start time]`:\t\t\t\t\t\t\t\t\t\t\t\t cancel a room you have currently booked at a given time.\n" +
+                        "`/bookit invite [room] [start time] [end time] [attendees]`:\t  book a room and invite all attendees on the reservation.\n");  
                 // case "defaults":
                     // parse text list for location and duration
 
                     // persist user defaults
+
+                case "cancel":
+                    slashCommand.replyPrivate(message, 
+                        "Beep beep boop beep. Still under construction!");
+
+                case "invite":
+                    slashCommand.replyPrivate(message, 
+                        "Beep beep boop beep. Still under construction!");
 
                 case "find":
                     var location = textList[1];
@@ -219,6 +208,8 @@ controller.on('slash_command', function (slashCommand, message) {
             // slashCommand.replyPublic(message, "booked!", function() {
             //     slashCommand.replyPublicDelayed(message, "2").then(slashCommand.replyPublicDelayed(message, "3"));
             // });
+
+
 
         break;
         default:
