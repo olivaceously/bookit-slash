@@ -14,7 +14,7 @@
  *
  * Authenticate users with Slack using OAuth
  * Receive messages using the slash_command event
- * Reply to Slash command both publicly and privately
+ * Reply to Slash command both publicly and privately-
 
  # RUN THE BOT:
 
@@ -86,9 +86,11 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 //
 
 var officeLocations = ["boston","waltham"];
-var meetingDurations = ["15","30","45","60","75","90"];
+//var meetingDurations = ["15","30","45","60","75","90"];
 var meetingRooms = ["Asteroids","Centipede","Contra","Donkey Kong","Frogger","Galaga","Myst","Pac-Man","Pong","Q*Bert","Tetris","Tron","Zelda","Bilbo","Boston Common","Bunker Hill","Charles","Constitution","East","Faneuil","Fenway","Frodo","Gandalf","Hynes","Legolas","Newbury","North","Prudential","Sauron","Seagol","South","The Garden","West","Babbage","Glacier","Gosling","Hopper","Minsky","Redwood","Rossum","Shenandoah","Turing","Yellowstone","Yosemite"];
 
+// dict: {'room': ('startTime','endTime')}
+var scheduledMeetings = {}
 
 var availableBoston = ["Hopper","Redwood","Rossum","Shenandoah","Turing"];
 var availableWaltham = ["Bilbo","Boston Common","Charles","South","The Garden","West"];
@@ -131,10 +133,11 @@ controller.on('slash_command', function (slashCommand, message) {
 
                 case "find":
                     var location = textList[1];
-                    var duration = textList[2];
-                    var startTime = textList[3];
+                   // var duration = textList[2];
+                    var startTime = textList[2];
+                    var endTime = textList[3];
 
-                    if (!isValidLocation(location) && !isValidDuration(duration))
+                    if (!isValidLocation(location) || /*!isValidDuration(duration)*/ !isValidTime(startTime) || !isValidTime(endTime))
                         break;
                     
                     // return the list of available rooms 
@@ -160,11 +163,12 @@ controller.on('slash_command', function (slashCommand, message) {
 
                 case "book":
                     var room = textList[1];
-                    var duration = textList[2];
-                    var startTime = textList[3];
+                    //var duration = textList[2];
+                    var startTime = textList[2];
+                    var endTime = textList[3];
 
                     // Check input format
-                    if (!isValidRoom(room) || !isValidDuration(duration))
+                    if (!isValidRoom(room) || /*!isValidDuration(duration)*/ !isValidTime(startTime) || !isValidTime(endTime))
                         break;
 
                     if (availableBoston.indexOf(room) >= 0) {
@@ -239,14 +243,43 @@ controller.on('slash_command', function (slashCommand, message) {
         return true;
     }
 
+    function isValidTime(time) {
+        var timeList = time.split(':');
+        var hour = timeList[0];
+        var minute = '00';
+        var invalid = false;
+        if (timeList.length > 1)
+            minute = timeList[1];
 
-    function isValidDuration(duration) {
-        if (meetingDurations.indexOf(duration) < 0) {
-            slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15 and up to 90 mins.");
+        // checking input is numerical
+        if (isNaN(Number(hour)) || isNaN(Number(minute))) {
+            invalid = true;
+        }
+
+        // checking input is a factor of 15
+        minuteNumber = Number(minute);
+        if (minuteNumber % 15 != 0) {
+            invalid = true;
+        }
+
+        // return
+        if (invalid) {
+            slashCommand.replyPrivate(message, "I'm sorry, I can't book that time. Please enter a time between 8 and 6 within a factor of 15. Ex: '5:15 6:30'");
             return false;
         }
-        return true;
+        else {
+            return true;
+        }
+        
     }
+
+    // function isValidDuration(duration) {
+    //     if (meetingDurations.indexOf(duration) < 0) {
+    //         slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15 and up to 90 mins.");
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     function isValidRoom(room) {
         if (meetingRooms.indexOf(room) < 0) {
