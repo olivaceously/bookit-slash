@@ -270,16 +270,16 @@ controller.on('slash_command', function (slashCommand, message) {
 
     function isValidMeetingDuration(startTime, endTime) {
 
-        startHour = startTime.split(':')[0];
-        endHour = endTime.split(':')[0];
+        startHour = Number(startTime.split(':')[0]);
+        endHour = Number(endTime.split(':')[0]);
         
         // converting to military time
         if (startHour < 7)
-            startTime = startTime + 12
-        if (endTime < 7)
-            endTime = endTime + 12
+            startHour = startHour + 12
+        if (endHour < 7)
+            endHour = endHour + 12
 
-        var duration = endTime - startTime;
+        var duration = endHour - startHour;
         if (duration > 2) {
             slashCommand.replyPrivate(message, "I'm sorry, but you currently cannot book a room for over 2 hours.");
             return false;
