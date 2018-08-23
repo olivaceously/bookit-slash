@@ -145,11 +145,11 @@ controller.on('slash_command', function (slashCommand, message) {
                     // TODO: make office location upper case
                     if (location === "boston") {
                         slashCommand.replyPrivate(message, 
-                            "The conference rooms currently available for " + duration + " mins in " + toTitleCase(officeLocations[0]) + " are: "
+                            "The conference rooms currently available between " + startTime + " and " + endTime + " are " + toTitleCase(officeLocations[0]) + " are: "
                              + toTitleCase(availableBoston.join(", ")) + ".");
                     } else if (location === "waltham") {
                              slashCommand.replyPrivate(message, 
-                            "The conference rooms currently available for " + duration + " mins in " + toTitleCase(officeLocations[1]) + " are: "
+                            "The conference rooms currently available between " + startTime + " and " + endTime + " are " + toTitleCase(officeLocations[1]) + " are: "
                              + toTitleCase(availableWaltham.join(", ")) + ".");
                     }
 
@@ -171,9 +171,13 @@ controller.on('slash_command', function (slashCommand, message) {
                     if (!isValidRoom(room) || /*!isValidDuration(duration)*/ !isValidTime(startTime) || !isValidTime(endTime))
                         break;
 
+                    // Check meeting duraiton
+                    if (!isValidMeetingDuration(startTime, endTime))
+                        break;
+
                     if (availableBoston.indexOf(room) >= 0) {
                         slashCommand.replyPrivate(message, 
-                            "Okay, " + room + " is now booked for " + duration + " mins.");
+                            "Okay, " + room + " is now booked for " + startTime + " to " + endTime + ".");
                             // removes available room from available array
                             var indexRoom = availableBoston.indexOf(room);
                             availableBoston.splice(indexRoom, 1);
@@ -181,7 +185,7 @@ controller.on('slash_command', function (slashCommand, message) {
 
                     }if (availableWaltham.indexOf(room) >= 0) {
                         slashCommand.replyPrivate(message, 
-                            "Okay, " + room + " is now booked for " + duration + " mins.");
+                            "Okay, " + room + " is now booked for " + startTime + " to " + endTime + ".");
                             // removes available room from available array
                             var indexRoom = availableWaltham.indexOf(room);
                             availableWaltham.splice(indexRoom, 1);
@@ -271,6 +275,25 @@ controller.on('slash_command', function (slashCommand, message) {
             return true;
         }
         
+    }
+
+    function isValidMeetingDuration(startTime, endTime) {
+
+        startHour = startTime.split(':')[0];
+        endHour = endTime.split(':')[0];
+        
+        // converting to military time
+        if (startHour < 7)
+            startTime = startTime + 12
+        if (endTime < 7)
+            endTime = endTime + 12
+
+        var duration = endTime - startTime;
+        if (duration > 2) {
+            slashCommand.replyPrivate(message, "I'm sorry, but you currently cannot book a room for over 2 hours.");
+            return false;
+        }
+        return true;
     }
 
     // function isValidDuration(duration) {
