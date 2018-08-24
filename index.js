@@ -1,20 +1,11 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
  ______    ______    ______   __  __    __    ______
  /\  == \  /\  __ \  /\__  _\ /\ \/ /   /\ \  /\__  _\
  \ \  __<  \ \ \/\ \ \ \ \/\ \ \ \  _"-. \ \ \ \/_/\ \/
  \ \_____\ \ \_____\ \ \_____\  \ \_\ \_\ \ \_\   \ \_\
  \/_____/  \/_____/  \/_____/  \/_/\/_/  \/_/    \/_/
 
-
- This is a sample Slack Button application that provides a custom
- Slash command.
-
- This bot demonstrates many of the core features of Botkit:
-
- *
- * Authenticate users with Slack using OAuth
- * Receive messages using the slash_command event
- * Reply to Slash command both publicly and privately
 
  # RUN THE BOT:
 
@@ -28,15 +19,6 @@
 
  Note: you can test your oauth authentication locally, but to use Slash commands
  in Slack, the app must be hosted at a publicly reachable IP or host.
-
-
- # EXTEND THE BOT:
-
- Botkit is has many features for building cool and useful bots!
-
- Read all about it here:
-
- -> http://howdy.ai/botkit
 
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -86,9 +68,11 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 //
 
 var officeLocations = ["boston","waltham"];
-var meetingDurations = ["15","30","45","60","75","90"];
+//var meetingDurations = ["15","30","45","60","75","90"];
 var meetingRooms = ["Asteroids","Centipede","Contra","Donkey Kong","Frogger","Galaga","Myst","Pac-Man","Pong","Q*Bert","Tetris","Tron","Zelda","Bilbo","Boston Common","Bunker Hill","Charles","Constitution","East","Faneuil","Fenway","Frodo","Gandalf","Hynes","Legolas","Newbury","North","Prudential","Sauron","Seagol","South","The Garden","West","Babbage","Glacier","Gosling","Hopper","Minsky","Redwood","Rossum","Shenandoah","Turing","Yellowstone","Yosemite"];
 
+// dict: {'room': ('startTime','endTime')}
+var scheduledMeetings = {}
 
 var availableBoston = ["Hopper","Redwood","Rossum","Shenandoah","Turing"];
 var availableWaltham = ["Bilbo","Boston Common","Charles","South","The Garden","West"];
@@ -121,20 +105,30 @@ controller.on('slash_command', function (slashCommand, message) {
                     //slashCommand.replyPrivate(message, String(JSONrooms.meetingRooms.boston.available[0]));
                     slashCommand.replyPrivate(message,
                         "I am here to help you book a room. Try one of the following: \n\n" + 
-                        "`/bookit find [location] [duration]`:\t\t see all available rooms in your specified office. \n" +
-                        "`/bookit book [room] [duration]`:\t\t\t\t book a room for a specified period of minutes (15, 30, 45, etc.).");  
-
+                        "`/bookit find [location] [start time] [end time]`:\t\t\t\t\t\t see all available rooms in your specified office.\n" +
+                        "`/bookit book [room] [start time] [end time]`:\t\t\t\t\t\t\t\tbook a room for a specified period of minutes (15, 30, 45, etc.).\n" +
+                        "`/bookit cancel [room] [start time]`:\t\t\t\t\t\t\t\t\t\t\t\t cancel a room you have currently booked at a given time.\n" +
+                        "`/bookit invite [room] [start time] [end time] [attendees]`:\t  book a room and invite all attendees on the reservation.\n");  
                 // case "defaults":
                     // parse text list for location and duration
 
                     // persist user defaults
 
+                case "cancel":
+                    slashCommand.replyPrivate(message, 
+                        "Beep beep boop beep. Still under construction!");
+
+                case "invite":
+                    slashCommand.replyPrivate(message, 
+                        "Beep beep boop beep. Still under construction!");
+
                 case "find":
                     var location = textList[1];
-                    var duration = textList[2];
-                    var startTime = textList[3];
+                   // var duration = textList[2];
+                    var startTime = textList[2];
+                    var endTime = textList[3];
 
-                    if (!isValidLocation(location) && !isValidDuration(duration))
+                    if (!isValidLocation(location) || /*!isValidDuration(duration)*/ !isValidTime(startTime) || !isValidTime(endTime))
                         break;
                     
                     // return the list of available rooms 
@@ -142,11 +136,11 @@ controller.on('slash_command', function (slashCommand, message) {
                     // TODO: make office location upper case
                     if (location === "boston") {
                         slashCommand.replyPrivate(message, 
-                            "The conference rooms currently available for " + duration + " mins in " + toTitleCase(officeLocations[0]) + " are: "
+                            "The conference rooms currently available between " + startTime + " and " + endTime + " are " + toTitleCase(officeLocations[0]) + " are: "
                              + toTitleCase(availableBoston.join(", ")) + ".");
                     } else if (location === "waltham") {
                              slashCommand.replyPrivate(message, 
-                            "The conference rooms currently available for " + duration + " mins in " + toTitleCase(officeLocations[1]) + " are: "
+                            "The conference rooms currently available between " + startTime + " and " + endTime + " are " + toTitleCase(officeLocations[1]) + " are: "
                              + toTitleCase(availableWaltham.join(", ")) + ".");
                     }
 
@@ -160,16 +154,21 @@ controller.on('slash_command', function (slashCommand, message) {
 
                 case "book":
                     var room = textList[1];
-                    var duration = textList[2];
-                    var startTime = textList[3];
+                    //var duration = textList[2];
+                    var startTime = textList[2];
+                    var endTime = textList[3];
 
                     // Check input format
-                    if (!isValidRoom(room) || !isValidDuration(duration))
+                    if (!isValidRoom(room) || /*!isValidDuration(duration)*/ !isValidTime(startTime) || !isValidTime(endTime))
+                        break;
+
+                    // Check meeting duraiton
+                    if (!isValidMeetingDuration(startTime, endTime))
                         break;
 
                     if (availableBoston.indexOf(room) >= 0) {
                         slashCommand.replyPrivate(message, 
-                            "Okay, " + room + " is now booked for " + duration + " mins.");
+                            "Okay, " + room + " is now booked for " + startTime + " to " + endTime + ".");
                             // removes available room from available array
                             var indexRoom = availableBoston.indexOf(room);
                             availableBoston.splice(indexRoom, 1);
@@ -177,7 +176,7 @@ controller.on('slash_command', function (slashCommand, message) {
 
                     }if (availableWaltham.indexOf(room) >= 0) {
                         slashCommand.replyPrivate(message, 
-                            "Okay, " + room + " is now booked for " + duration + " mins.");
+                            "Okay, " + room + " is now booked for " + startTime + " to " + endTime + ".");
                             // removes available room from available array
                             var indexRoom = availableWaltham.indexOf(room);
                             availableWaltham.splice(indexRoom, 1);
@@ -216,6 +215,8 @@ controller.on('slash_command', function (slashCommand, message) {
             //     slashCommand.replyPublicDelayed(message, "2").then(slashCommand.replyPublicDelayed(message, "3"));
             // });
 
+
+
         break;
         default:
             slashCommand.replyPublic(message, "error. contact administrators.");
@@ -239,14 +240,62 @@ controller.on('slash_command', function (slashCommand, message) {
         return true;
     }
 
+    function isValidTime(time) {
+        var timeList = time.split(':');
+        var hour = timeList[0];
+        var minute = '00';
+        var invalid = false;
+        if (timeList.length > 1)
+            minute = timeList[1];
 
-    function isValidDuration(duration) {
-        if (meetingDurations.indexOf(duration) < 0) {
-            slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15 and up to 90 mins.");
+        // checking input is numerical
+        if (isNaN(Number(hour)) || isNaN(Number(minute))) {
+            invalid = true;
+        }
+
+        // checking input is a factor of 15
+        minuteNumber = Number(minute);
+        if (minuteNumber % 15 != 0) {
+            invalid = true;
+        }
+
+        // return
+        if (invalid) {
+            slashCommand.replyPrivate(message, "I'm sorry, I can't book that time. Please enter a time between 8 and 6 within a factor of 15. Ex: '5:15 6:30'");
+            return false;
+        }
+        else {
+            return true;
+        }
+        
+    }
+
+    function isValidMeetingDuration(startTime, endTime) {
+
+        startHour = Number(startTime.split(':')[0]);
+        endHour = Number(endTime.split(':')[0]);
+        
+        // converting to military time
+        if (startHour < 7)
+            startHour = startHour + 12
+        if (endHour < 7)
+            endHour = endHour + 12
+
+        var duration = endHour - startHour;
+        if (duration > 2) {
+            slashCommand.replyPrivate(message, "I'm sorry, but you currently cannot book a room for over 2 hours.");
             return false;
         }
         return true;
     }
+
+    // function isValidDuration(duration) {
+    //     if (meetingDurations.indexOf(duration) < 0) {
+    //         slashCommand.replyPrivate(message, "I'm sorry, I can only schedule meetings in increments of 15 and up to 90 mins.");
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     function isValidRoom(room) {
         if (meetingRooms.indexOf(room) < 0) {
